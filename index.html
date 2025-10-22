@@ -29,6 +29,17 @@
         th { background-color: #f2f2f2; }
         td:nth-child(n+2) { text-align: right; }
         .difference-negative { color: red; }
+        /* --- Add this block for Mobile Responsiveness --- */
+        @media (max-width: 600px) {
+            .table-container {
+                overflow-x: auto;  /* This is the key change: enables horizontal scrolling */
+                -webkit-overflow-scrolling: touch; /* Improves scrolling feel on iOS devices */
+            }
+            th, td {
+                padding: 12px 8px; /* Slightly reduce side padding for more space */
+                white-space: nowrap; /* Prevents text like "(SAR 10.00)" from breaking into two lines */
+            }
+        }
     </style>
 </head>
 <body>
@@ -207,3 +218,4 @@
 
 </body>
 </html>
+
