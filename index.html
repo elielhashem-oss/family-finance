@@ -29,15 +29,17 @@
         th { background-color: #f2f2f2; }
         td:nth-child(n+2) { text-align: right; }
         .difference-negative { color: red; }
-        /* --- Add this block for Mobile Responsiveness --- */
+
+        /* --- FINAL FIX FOR MOBILE SCROLLING --- */
         @media (max-width: 600px) {
             .table-container {
-                overflow-x: auto;  /* This is the key change: enables horizontal scrolling */
-                -webkit-overflow-scrolling: touch; /* Improves scrolling feel on iOS devices */
+                overflow-x: auto;  /* This enables horizontal scrolling on the table's container */
+                -webkit-overflow-scrolling: touch; /* This improves the scrolling feel on iPhones */
+                padding-bottom: 5px; /* Adds a little space for the scrollbar */
             }
             th, td {
-                padding: 12px 8px; /* Slightly reduce side padding for more space */
-                white-space: nowrap; /* Prevents text like "(SAR 10.00)" from breaking into two lines */
+                white-space: nowrap; /* This prevents the text in cells from wrapping to a new line */
+                padding: 12px 10px; /* Adjust padding slightly for mobile */
             }
         }
     </style>
@@ -218,4 +220,3 @@
 
 </body>
 </html>
-
