@@ -4,91 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Family Finance Tracker</title>
+    <!-- Import Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f7f6;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        .container {
-            width: 100%;
-            max-width: 500px;
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        .header {
-            text-align: center;
-            padding: 20px;
-            background-color: #fffd74;
-        }
-        .user-image {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            border: 4px solid #ffffff;
-            object-fit: cover;
-        }
-        .form-container {
-            padding: 25px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-        }
-        input[type="date"],
-        input[type="text"],
-        input[type="number"],
-        select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        button, .summary-link {
-            width: 100%;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 18px;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: #fffd74;
-            color: black;
-            border: none;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #808000;
-        }
-        .summary-link {
-            background-color: #808000;
-            color: white;
-            margin-top: 15px;
-        }
-        .summary-link:hover {
-            background-color: #808000;
-        }
-        #message {
-            margin-top: 15px;
-            text-align: center;
-            font-weight: 500;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 600px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); overflow: hidden; }
+        .header { text-align: center; padding: 20px; background-color: #fffd74; }
+        .user-image { width: 100px; height: 100px; border-radius: 50%; border: 4px solid #ffffff; object-fit: cover; }
+        .form-container, .summary-container { padding: 25px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
+        input[type="date"], input[type="text"], input[type="number"], select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 15px; background-color: #fffd74; color: black; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; transition: background-color 0.3s; }
+        button:hover { background-color: #808000; }
+        .nav-button { background-color: #808000; margin-top: 10px; }
+        .nav-button:hover { background-color: #808000; }
+        #message { margin-top: 15px; text-align: center; font-weight: 500; }
+        /* Summary View Styles */
+        .summary-container { display: none; }
+        .chart-container { width: 100%; margin-bottom: 30px; }
+        h2, h3 { text-align: center; color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f2f2f2; }
+        td:nth-child(n+2) { text-align: right; }
+        .difference-negative { color: red; }
     </style>
 </head>
 <body>
@@ -97,38 +37,76 @@
     <div class="header">
         <img src="user rajaa.jpeg" alt="User Image" class="user-image">
     </div>
-    <div class="form-container">
-        <form id="transaction-form">
-            <!-- Form fields will be injected by JS -->
-        </form>
+
+    <!-- View 1: Transaction Form -->
+    <div class="form-container" id="form-view">
+        <form id="transaction-form"></form>
         <p id="message"></p>
-        <a href="https://docs.google.com/spreadsheets/d/1cJA7AFGkH5UXylXKUw2Cx0v8Ss6IdR--js_0mal8jvA/edit?gid=1867323937#gid=1867323937" target="_blank" class="summary-link">View Summary Report</a>
+        <button class="nav-button" id="show-summary-btn">Show Summary</button>
+    </div>
+
+    <!-- View 2: Summary Dashboard -->
+    <div class="summary-container" id="summary-view">
+        <h2>Monthly Budget Summary</h2>
+        <div class="chart-container">
+            <h3>Actual Summary</h3>
+            <canvas id="doughnutChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h3>Budget vs. Actual</h3>
+            <canvas id="barChart"></canvas>
+        </div>
+        <div class="table-container">
+            <h3>Summary by Category</h3>
+            <table id="summary-table">
+                <thead><tr><th>Category</th><th>Budget</th><th>Actual</th><th>Difference</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <button class="nav-button" id="back-to-form-btn">Back to Form</button>
     </div>
 </div>
 
 <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbweXqEFCViCM1rvAeOBS53cVRn2E394OZJhv645R8C48B8_x5-2pOwvp3worVDFNHQP3A/exec'; // <-- IMPORTANT! Paste new URL here
-    const form = document.getElementById('transaction-form');
-    const message = document.getElementById('message');
+    // --- IMPORTANT: PASTE YOUR NEW WEB APP URL HERE ---
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwb1kjZe0WEs9J-mQWd_5QR04uzzgViqjSNgwiXmjTKQ8sjLdDuEbF4d21jdEwXhcPTFg/exec';
 
-    // Inject form HTML
+    // View containers and navigation buttons
+    const formView = document.getElementById('form-view');
+    const summaryView = document.getElementById('summary-view');
+    const showSummaryBtn = document.getElementById('show-summary-btn');
+    const backToFormBtn = document.getElementById('back-to-form-btn');
+    let doughnutChart, barChart; // To hold chart instances
+
+    // --- Navigation Logic ---
+    showSummaryBtn.addEventListener('click', () => {
+        formView.style.display = 'none';
+        summaryView.style.display = 'block';
+        loadSummaryData();
+    });
+    backToFormBtn.addEventListener('click', () => {
+        summaryView.style.display = 'none';
+        formView.style.display = 'block';
+    });
+
+    // --- Form Submission Logic ---
+    const form = document.getElementById('transaction-form');
     form.innerHTML = `
         <div class="form-group" style="display: flex; gap: 15px;">
             <label><input type="radio" name="type" value="Income" checked> Income</label>
             <label><input type="radio" name="type" value="Expense"> Expense</label>
         </div>
         <div class="form-group"><label for="date">Date</label><input type="date" id="date" name="date" required></div>
-        <div class="form-group"><label for="description">Description</label><input type="text" id="description" name="description" placeholder="e.g., Salary, Groceries" required></div>
+        <div class="form-group"><label for="description">Description</label><input type="text" id="description" name="description" placeholder="e.g., Groceries" required></div>
         <div class="form-group" id="category-group" style="display:none;"><label for="category">Category</label><select id="category" name="category"><option>Auto</option><option>Entertainment</option><option>Food</option><option>Home</option><option>Medical</option><option>Personal Items</option><option>Travel</option><option>Utilities</option><option>Other</option></select></div>
         <div class="form-group"><label for="amount">Amount</label><input type="number" id="amount" name="amount" placeholder="Enter amount" required></div>
         <button type="submit">Add Transaction</button>
     `;
 
     const categoryGroup = document.getElementById('category-group');
+    const message = document.getElementById('message');
     document.querySelectorAll('input[name="type"]').forEach(radio => {
-        radio.addEventListener('change', () => {
-            categoryGroup.style.display = document.querySelector('input[name="type"]:checked').value === 'Expense' ? 'block' : 'none';
-        });
+        radio.addEventListener('change', () => { categoryGroup.style.display = document.querySelector('input[name="type"]:checked').value === 'Expense' ? 'block' : 'none'; });
     });
 
     form.addEventListener('submit', (e) => {
@@ -137,22 +115,94 @@
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
 
-        fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) })
-        .then(response => response.json())
-        .then(result => {
-            if(result.result === 'success') {
-                message.textContent = 'Transaction added! Summary is being updated.';
+        fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'text/plain;charset=utf-8' }})
+        .then(res => res.json())
+        .then(res => {
+            if(res.result === 'success') {
+                message.textContent = 'Transaction added! Summary updated.';
                 message.style.color = 'green';
                 form.reset();
                 categoryGroup.style.display = 'none';
-            } else { throw new Error('Submission failed'); }
+            } else { throw new Error(res.message); }
         })
         .catch(error => {
-            message.textContent = 'Error: Could not add transaction.';
+            message.textContent = `Error: ${error.message}`;
             message.style.color = 'red';
         });
         setTimeout(() => { message.textContent = ''; }, 5000);
     });
+
+    // --- Summary Loading and Rendering Logic ---
+    function loadSummaryData() {
+        summaryView.querySelector('h2').textContent = 'Loading Summary...';
+        fetch(SCRIPT_URL)
+        .then(response => response.json())
+        .then(data => {
+            if (data.result === 'error') throw new Error(data.message);
+            summaryView.querySelector('h2').textContent = 'Monthly Budget Summary';
+            renderSummaryTable(data.summaryByCategory, data.totals);
+            renderDoughnutChart(data.summaryByCategory);
+            renderBarChart(data.summaryByCategory);
+        })
+        .catch(error => {
+            console.error('Error fetching summary:', error);
+            summaryView.querySelector('h2').textContent = 'Could not load summary data.';
+            alert(`Error loading summary: ${error.message}. Please check script deployment permissions.`);
+        });
+    }
+
+    function renderSummaryTable(summaryData, totals) {
+        const tableBody = document.querySelector("#summary-table tbody");
+        tableBody.innerHTML = '';
+        summaryData.forEach(item => {
+            const diffText = item.difference < 0 ? `(SAR ${Math.abs(item.difference).toFixed(2)})` : `SAR ${item.difference.toFixed(2)}`;
+            tableBody.innerHTML += `<tr>
+                <td>${item.category}</td>
+                <td>SAR ${item.budget.toFixed(2)}</td>
+                <td>SAR ${item.actual.toFixed(2)}</td>
+                <td class="${item.difference < 0 ? 'difference-negative' : ''}">${diffText}</td>
+            </tr>`;
+        });
+        const totalDiffText = totals.difference < 0 ? `(SAR ${Math.abs(totals.difference).toFixed(2)})` : `SAR ${totals.difference.toFixed(2)}`;
+        tableBody.innerHTML += `<tr style="font-weight: bold;">
+            <td>Total</td>
+            <td>SAR ${totals.budget.toFixed(2)}</td>
+            <td>SAR ${totals.actual.toFixed(2)}</td>
+            <td class="${totals.difference < 0 ? 'difference-negative' : ''}">${totalDiffText}</td>
+        </tr>`;
+    }
+
+    function renderDoughnutChart(summaryData) {
+        const ctx = document.getElementById('doughnutChart').getContext('2d');
+        if (doughnutChart) doughnutChart.destroy();
+        doughnutChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: summaryData.map(d => d.category),
+                datasets: [{
+                    data: summaryData.map(d => d.actual),
+                    backgroundColor: ['#3498db', '#e74c3c', '#f1c40f', '#2ecc71', '#9b59b6', '#34495e', '#1abc9c', '#95a5a6'],
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    function renderBarChart(summaryData) {
+        const ctx = document.getElementById('barChart').getContext('2d');
+        if (barChart) barChart.destroy();
+        barChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: summaryData.map(d => d.category),
+                datasets: [
+                    { label: 'Budget', data: summaryData.map(d => d.budget), backgroundColor: '#4a90e2' },
+                    { label: 'Actual', data: summaryData.map(d => d.actual), backgroundColor: '#28a745' }
+                ]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
+        });
+    }
 </script>
 
 </body>
